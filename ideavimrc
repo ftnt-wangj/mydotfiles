@@ -1,0 +1,131 @@
+" =====================================================================
+"  .ideavimrc  —  for Neovim users on Windows / Linux (IntelliJ IDEA)
+"  哲学:编辑动作用 Vim，跳转/重构/结构分析全部走 IDE 语义 action
+"  放置位置:
+"    Windows : %USERPROFILE%\.ideavimrc   (即 C:\Users\你\.ideavimrc)
+"    Linux   : ~/.ideavimrc
+"  依赖插件(Settings | Plugins 里先装):
+"    IdeaVim / IdeaVim-EasyMotion / AceJump / IdeaVim-which-key / IdeaVim-Sneak
+" =====================================================================
+
+" ---------- 基础设置(nvim 用户熟悉的默认) ----------
+set number relativenumber          " 混合行号
+set scrolloff=8                    " 光标上下保留 8 行
+set incsearch hlsearch             " 增量 + 高亮搜索
+set ignorecase smartcase           " 智能大小写
+set clipboard+=unnamed,ideaput     " 与系统剪贴板互通(Win/Linux 用 unnamed)
+set ideajoin                       " J 合并行时用 IDE 的智能合并
+set idearefactormode=keep          " 重构时保持 Vim 模式,不弹回插入态
+set showmode showcmd
+set visualbell
+
+" leader = 空格(和主流 nvim 配置一致)
+let mapleader = " "
+
+" ---------- 启用的 IdeaVim 插件 ----------
+set easymotion                     " 需 AceJump + IdeaVim-EasyMotion
+set which-key                      " leader 提示面板
+set notimeout                      " which-key 不因超时消失
+set surround                       " cs / ds / ys
+set commentary                     " gcc / gc{motion} 注释
+set highlightedyank                " 复制时高亮
+set sneak                          " s{char}{char} 双字符跳转
+set NERDTree                       " 可选:用 Vim 键操作项目树
+
+" =====================================================================
+"  一、下钻 → 回弹(读代码的核心循环)
+" =====================================================================
+" gd 跳定义 / gy 跳类型定义 / gi 跳实现 / gr 找用法(对齐 LSP 习惯)
+nnoremap gd :action GotoDeclaration<CR>
+nnoremap gy :action GotoTypeDeclaration<CR>
+nnoremap gi :action GotoImplementation<CR>
+nnoremap gr :action FindUsages<CR>
+nnoremap gu :action ShowUsages<CR>          " 用法弹窗(不跳走)
+nnoremap gs :action GotoSuperMethod<CR>     " 跳父类/父方法
+
+" 回弹 / 前进(等价 nvim 的 Ctrl-o / Ctrl-i)
+nnoremap <C-o> :action Back<CR>
+nnoremap <C-i> :action Forward<CR>
+nnoremap <leader>. :action RecentLocations<CR>   " 最近访问位置
+
+" =====================================================================
+"  二、不跳走就“偷看”(先阅读阶段最省心)
+" =====================================================================
+nnoremap K       :action QuickJavaDoc<CR>        " 悬浮文档(全语言通用)
+nnoremap <leader>p :action QuickImplementations<CR>  " Quick Definition 弹窗
+nnoremap <leader>k :action ParameterInfo<CR>     " 参数信息
+nnoremap <leader>a :action ShowIntentionActions<CR>  " Alt+Enter / code action
+
+" =====================================================================
+"  三、全局定位(找入口)—— 对齐 Telescope 习惯
+" =====================================================================
+nnoremap <leader>ff :action GotoFile<CR>         " 找文件
+nnoremap <leader>fc :action GotoClass<CR>        " 找类
+nnoremap <leader>fs :action GotoSymbol<CR>       " 找符号(方法/字段)
+nnoremap <leader>fg :action FindInPath<CR>       " 全局文本搜索(grep)
+nnoremap <leader>fr :action ReplaceInPath<CR>    " 全局替换
+nnoremap <leader>fe :action RecentFiles<CR>      " 最近文件
+nnoremap <leader>fE :action RecentChangedFiles<CR>
+nnoremap <leader><leader> :action SearchEverywhere<CR>  " 万能入口
+
+" =====================================================================
+"  四、理解结构(读懂“关系”)
+" =====================================================================
+nnoremap <leader>o :action FileStructurePopup<CR>   " 当前文件大纲
+nnoremap <leader>ch :action CallHierarchy<CR>       " 调用层级(读调用链神器)
+nnoremap <leader>th :action TypeHierarchy<CR>       " 类型/继承层级
+nnoremap <leader>mh :action MethodHierarchy<CR>
+nnoremap ]m :action MethodDown<CR>                  " 下一个方法
+nnoremap [m :action MethodUp<CR>                    " 上一个方法
+nnoremap ]e :action GotoNextError<CR>               " 下一个错误
+nnoremap [e :action GotoPreviousError<CR>
+nnoremap ]c :action VcsShowNextChangeMarker<CR>     " 下一处 VCS 改动
+nnoremap [c :action VcsShowPrevChangeMarker<CR>
+
+" =====================================================================
+"  五、书签(读长逻辑留锚点)
+" =====================================================================
+nnoremap <leader>m :action ToggleBookmarkWithMnemonic<CR>  " 带助记符书签
+nnoremap <leader>bb :action ShowBookmarks<CR>
+
+" =====================================================================
+"  六、重构 / 编辑增强(IDE 语义重构,比手改快得多)
+" =====================================================================
+nnoremap <leader>rn :action RenameElement<CR>       " 语义重命名
+nnoremap <leader>rr :action Refactorings.QuickListPopupAction<CR>
+nnoremap <leader>= :action ReformatCode<CR>         " 格式化
+nnoremap <leader>i :action OptimizeImports<CR>      " 整理 import
+
+" =====================================================================
+"  七、窗口 / 工具窗口 / 面板
+" =====================================================================
+nnoremap <leader>e :action ActivateProjectToolWindow<CR>   " 项目树
+nnoremap <leader>t :action ActivateTerminalToolWindow<CR>  " 终端(跑 Claude Code)
+nnoremap <leader>q :action CloseContent<CR>                " 关闭当前 tab
+nnoremap <C-h> <C-w>h
+nnoremap <C-j> <C-w>j
+nnoremap <C-k> <C-w>k
+nnoremap <C-l> <C-w>l
+nnoremap <leader>sv :action SplitVertically<CR>
+nnoremap <leader>sh :action SplitHorizontally<CR>
+
+" =====================================================================
+"  八、EasyMotion 跳转(等价 flash.nvim / leap.nvim)
+" =====================================================================
+map <leader>j <Plug>(easymotion-s)      " 双字符全屏跳
+map <leader>w <Plug>(easymotion-bd-w)   " 按 word 跳
+
+" ---------- 顺手的小改动 ----------
+nnoremap <Esc> :nohlsearch<CR>          " Esc 清搜索高亮
+nnoremap Y y$                           " Y 复制到行尾
+vnoremap < <gv                          " 缩进后保持选区
+vnoremap > >gv
+" 保存(交给 IDE 的 SaveAll,触发自动格式化/优化)
+nnoremap <leader>ss :action SaveAll<CR>
+
+" 调试常用(你调 Go/Rust/JVM 会用到)
+nnoremap <leader>db :action ToggleLineBreakpoint<CR>
+nnoremap <leader>dd :action Debug<CR>
+nnoremap <leader>dr :action Resume<CR>
+nnoremap <F8>  :action StepOver<CR>
+nnoremap <F7>  :action StepInto<CR>
