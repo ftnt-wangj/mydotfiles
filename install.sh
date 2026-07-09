@@ -30,6 +30,22 @@ link_path() {
   printf 'Linked %s -> %s\n' "$target_path" "$source_path"
 }
 
+copy_path() {
+  local source_path="$1"
+  local target_path="$2"
+
+  mkdir -p "$(dirname "$target_path")"
+
+  if [ -f "$target_path" ] && cmp -s "$source_path" "$target_path"; then
+    printf 'Already copied: %s\n' "$target_path"
+    return
+  fi
+
+  backup_if_needed "$target_path"
+  cp "$source_path" "$target_path"
+  printf 'Copied %s -> %s\n' "$source_path" "$target_path"
+}
+
 ensure_oh_my_tmux() {
   if [ -f "$HOME/.tmux/.tmux.conf" ]; then
     return
@@ -44,6 +60,7 @@ ensure_oh_my_tmux() {
 }
 
 link_path "$repo_root/nvim" "$HOME/.config/nvim"
+copy_path "$repo_root/ideavimrc" "$HOME/.ideavimrc"
 
 ensure_oh_my_tmux
 link_path "$HOME/.tmux/.tmux.conf" "$HOME/.tmux.conf"
